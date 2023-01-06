@@ -12,6 +12,12 @@ var animating = 0;
 var dx = 0;
 var dy = 0;
 var movespeed = 4;
+
+var map = [ [ 1, 1, 1, 1 ],
+	    [ 1, 0, 0, 1 ],
+	    [ 1, 1, 0, 1 ],
+	    [ 1, 1, 1, 1 ] ];
+
 function getImage(name)
 {
     image = new Image();
@@ -58,8 +64,8 @@ function makeTitleBitmaps()
 
 function resetGame()
 {
-    x = 128;
-    y = 128;
+    x = 32;
+    y = 32;
 }
 
 function init()
@@ -80,6 +86,15 @@ function draw() {
 	return;
     }
 
+    ctx.fillStyle = "#000000";
+    for(var my=0;my<map.length;my++) {
+	for(var mx=0;mx<map[my].length;mx++) {
+	    if(map[my][mx] > 0) {
+		ctx.fillRect(mx*32,my*32,32,32);
+	    }
+	}
+    }
+
     ctx.drawImage(playerImage, x, y);
 
     if(mode == MODE_WIN) {
@@ -96,7 +111,12 @@ function processKeys() {
 	else if(keysDown[37] || keysDown[65]) dx = -1;
 	else if(keysDown[39] || keysDown[68]) dx = 1;
 	if (dx != 0 || dy != 0) {
-	    animating = 32;
+	    var tx = y>>5 + dy;
+	    var ty = x>>5 + dx;
+	    console.log("Inspect "+tx+","+ty);
+	    if(map[(y >> 5) + dy][(x >> 5) + dx]==0) {
+		animating = 32;
+	    }
 	}
     } else {
 	x += dx*movespeed;
