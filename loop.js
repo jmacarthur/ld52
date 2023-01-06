@@ -8,6 +8,10 @@ var MODE_TITLE = 0;
 var MODE_PLAY  = 1;
 var MODE_WIN   = 2;
 
+var animating = 0;
+var dx = 0;
+var dy = 0;
+var movespeed = 4;
 function getImage(name)
 {
     image = new Image();
@@ -15,7 +19,7 @@ function getImage(name)
     return image;
 }
 
-function drawChar(context, c, x, y) 
+function drawChar(context, c, x, y)
 {
     c = c.charCodeAt(0);
     if(c > 0) {
@@ -84,14 +88,21 @@ function draw() {
 }
 
 function processKeys() {
-    if(keysDown[40] || keysDown[83]) y += 4;
-    if(keysDown[38] || keysDown[87]) y -= 4;
-    if(keysDown[37] || keysDown[65]) x -= 4;
-    if(keysDown[39] || keysDown[68]) x += 4;
-    if(x < 0) x = 0;
-    if(x > SCREENWIDTH - playerImage.width)  x = SCREENHEIGHT - playerImage.width;
-    if(y < 0) y = 0;
-    if(y > SCREENWIDTH - playerImage.height) y = SCREENHEIGHT - playerImage.height;
+    if (animating<=0) {
+	dx = 0;
+	dy = 0;
+	if(keysDown[40] || keysDown[83]) dy = 1;
+	else if(keysDown[38] || keysDown[87]) dy = -1;
+	else if(keysDown[37] || keysDown[65]) dx = -1;
+	else if(keysDown[39] || keysDown[68]) dx = 1;
+	if (dx != 0 || dy != 0) {
+	    animating = 32;
+	}
+    } else {
+	x += dx*movespeed;
+	y += dy*movespeed;
+	animating -= movespeed;
+    }
 }
 
 function drawRepeat() {
@@ -102,29 +113,12 @@ function drawRepeat() {
     if(!stopRunloop) setTimeout('drawRepeat()',20);
 }
 
-function press(c) {
-    console.log("press "+c);
-    if(c==32) {
-	if(mode == MODE_TITLE) {
-	    resetGame();
-	    mode = MODE_PLAY;
-	}
-    } else {
-	keysDown[c] = 1;
-    }
-}
-
-function unpress(c) {
-    console.log("unpress "+c);
-    keysDown[c] = 0;
-}
-
-
 if (canvas.getContext('2d')) {
     stopRunloop = false;
     ctx = canvas.getContext('2d');
     body.onkeydown = function (event) {
 	var c = event.keyCode;
+	console.log("Keydown: "+c);
         keysDown[c] = 1;
 	if(c == 81) {
 	    stopRunloop=true;
@@ -142,14 +136,12 @@ if (canvas.getContext('2d')) {
 	}
     };
 
-
-    
     body.onkeyup = function (event) {
 	var c = event.keyCode;
         keysDown[c] = 0;
     };
 
-    if(init()) {      
+    if(init()) {
       drawRepeat();
     }
 }
