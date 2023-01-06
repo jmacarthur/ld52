@@ -13,10 +13,31 @@ var dx = 0;
 var dy = 0;
 var movespeed = 4;
 
-var map = [ [ 1, 1, 1, 1 ],
-	    [ 1, 0, 0, 1 ],
-	    [ 1, 1, 0, 1 ],
-	    [ 1, 1, 1, 1 ] ];
+var map;
+var watermap = [];
+
+var dxlist = [ 1, 0, -1, 0];
+var dylist = [ 0, -1, 0, 1];
+
+function makeMaps() {
+    map = [ [ 1, 1, 1, 1, 1, 1, 1, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 1, 1, 1, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 1, 1, 1, 1, 1, 1, 1 ] ];
+
+    for(var gy=0;gy<8;gy++) {
+	line = [];
+	for(var gx=0;gx<8;gx++) {
+	    line.push(0);
+	}
+	watermap.push(line);
+    }
+    watermap[6][6] = 255;
+}
 
 function getImage(name)
 {
@@ -64,6 +85,7 @@ function makeTitleBitmaps()
 
 function resetGame()
 {
+    makeMaps();
     x = 32;
     y = 32;
 }
@@ -77,8 +99,28 @@ function init()
     return true;
 }
 
+function spill() {
+    watermap[6][6] = 255;
+    for(var my=0;my<map.length;my++) {
+	for(var mx=0;mx<map[my].length;mx++) {
+	    var level = watermap[my][mx];
+	    dir = Math.floor(Math.random()*4);
+	    var dx = dxlist[dir]
+	    var dy = dylist[dir]
+	    if(level > 0) {
+		if(watermap[my+dy][mx+dx] <= level && map[my+dy][mx+dx] == 0) {
+		    diff = level - watermap[my+dy][mx+dx];
+		    watermap[my+dy][mx+dx] += diff >> 1;
+		    level -= diff >> 1;
+		}
+	    }
+	    watermap[my][mx] = level;
+	}
+    }
+}
+
 function draw() {
-    ctx.fillStyle = "#0000ff";
+    ctx.fillStyle = "#c0c0c0";
     ctx.fillRect(0, 0, SCREENWIDTH, SCREENHEIGHT);
 
     if(mode == MODE_TITLE) {
@@ -86,17 +128,21 @@ function draw() {
 	return;
     }
 
-    ctx.fillStyle = "#000000";
     for(var my=0;my<map.length;my++) {
 	for(var mx=0;mx<map[my].length;mx++) {
+	    ctx.fillStyle = "#000000";
 	    if(map[my][mx] > 0) {
 		ctx.fillRect(mx*32,my*32,32,32);
+	    }
+	    if(watermap[my][mx] > 0) {
+		ctx.fillStyle = "#0000" + ((watermap[my][mx]>>1) + 127).toString(16);
+		ctx.fillRect(mx*32, my*32, 32,32);
 	    }
 	}
     }
 
     ctx.drawImage(playerImage, x, y);
-
+    console.log("Water here: "+watermap[y>>5][x>>5]);
     if(mode == MODE_WIN) {
 	ctx.drawImage(winBitmap, 0, 0);
     }
@@ -125,11 +171,18 @@ function processKeys() {
     }
 }
 
+function gameloop() {
+    spill();
+}
+
 function drawRepeat() {
     if(mode != MODE_TITLE) {
 	processKeys();
     }
     draw();
+    if(mode == MODE_PLAY) {
+	gameloop();
+    }
     if(!stopRunloop) setTimeout('drawRepeat()',20);
 }
 
