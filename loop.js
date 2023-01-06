@@ -19,24 +19,33 @@ var watermap = [];
 var dxlist = [ 1, 0, -1, 0];
 var dylist = [ 0, -1, 0, 1];
 
-function makeMaps() {
-    map = [ [ 1, 1, 1, 1, 1, 1, 1, 1 ],
-	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
-	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
-	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
-	    [ 1, 2, 2, 2, 2, 2, 2, 1 ],
-	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
-	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
-	    [ 1, 1, 1, 1, 1, 1, 1, 1 ] ];
+var mapwidth = 0;
+var mapheight = 0;
 
-    for(var gy=0;gy<8;gy++) {
+function makeMaps() {
+    map = [ [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1 ],
+	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1 ],
+	    [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ];
+
+    mapwidth = map[0].length;
+    mapheight = map.length;
+
+    for(var gy=0;gy<mapheight;gy++) {
 	line = [];
-	for(var gx=0;gx<8;gx++) {
+	for(var gx=0;gx<mapwidth;gx++) {
 	    line.push(0);
 	}
 	watermap.push(line);
     }
-    watermap[6][6] = 255;
+    watermap[mapheight-2][mapwidth-2] = 255;
 }
 
 function getImage(name)
@@ -100,7 +109,8 @@ function init()
 }
 
 function spill() {
-    watermap[6][6] = 255;
+    watermap[mapheight-2][mapwidth-2] = 255;
+    watermap[1][1] = 0;
     for(var my=0;my<map.length;my++) {
 	for(var mx=0;mx<map[my].length;mx++) {
 	    var level = watermap[my][mx];
@@ -138,7 +148,7 @@ function draw() {
 		ctx.fillStyle = "#00ff00";
 		ctx.fillRect(mx*32,my*32,32,32);
 	    }
-	    if(watermap[my][mx] > 0) {
+	    else if(watermap[my][mx] > 0) {
 		ctx.fillStyle = "#0000" + ((watermap[my][mx]>>1) + 127).toString(16);
 		ctx.fillRect(mx*32, my*32, 32,32);
 	    }
@@ -173,6 +183,11 @@ function processKeys() {
 		animating = 32;
 	    }
 
+	} else {
+	    if(keysDown[13] && map[(y >> 5)][(x >> 5)]==0) {
+		// Place plug
+		map[(y >> 5) + dy][(x >> 5) + dx] = 2;
+	    }
 	}
     } else {
 	x += dx*movespeed;
