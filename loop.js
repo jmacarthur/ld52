@@ -24,7 +24,7 @@ function makeMaps() {
 	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
 	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
 	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
-	    [ 1, 0, 0, 0, 1, 1, 1, 1 ],
+	    [ 1, 2, 2, 2, 2, 2, 2, 1 ],
 	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
 	    [ 1, 0, 0, 0, 0, 0, 0, 1 ],
 	    [ 1, 1, 1, 1, 1, 1, 1, 1 ] ];
@@ -130,8 +130,12 @@ function draw() {
 
     for(var my=0;my<map.length;my++) {
 	for(var mx=0;mx<map[my].length;mx++) {
-	    ctx.fillStyle = "#000000";
-	    if(map[my][mx] > 0) {
+	    if(map[my][mx] == 1) {
+		ctx.fillStyle = "#000000";
+		ctx.fillRect(mx*32,my*32,32,32);
+	    }
+	    else if(map[my][mx] == 2) {
+		ctx.fillStyle = "#00ff00";
 		ctx.fillRect(mx*32,my*32,32,32);
 	    }
 	    if(watermap[my][mx] > 0) {
@@ -163,6 +167,12 @@ function processKeys() {
 	    if(map[(y >> 5) + dy][(x >> 5) + dx]==0) {
 		animating = 32;
 	    }
+	    else if(map[(y >> 5) + dy][(x >> 5) + dx]==2) {
+		// Collect plug
+		map[(y >> 5) + dy][(x >> 5) + dx] = 0;
+		animating = 32;
+	    }
+
 	}
     } else {
 	x += dx*movespeed;
