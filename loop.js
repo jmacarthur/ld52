@@ -22,6 +22,8 @@ var dylist = [ 0, -1, 0, 1];
 var mapwidth = 0;
 var mapheight = 0;
 
+var plugs = 4;
+
 function makeMaps() {
     map = [ [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
 	    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
@@ -156,6 +158,13 @@ function draw() {
     }
 
     ctx.drawImage(playerImage, x, y);
+
+    ctx.fillStyle = "#000000";
+    for(var i=0;i<plugs;i++) {
+	ctx.fillRect(i*16, 440, 8, 8);
+    }
+
+    
     console.log("Water here: "+watermap[y>>5][x>>5]);
     if(mode == MODE_WIN) {
 	ctx.drawImage(winBitmap, 0, 0);
@@ -164,8 +173,15 @@ function draw() {
 
 function processKeys() {
     if (animating<=0) {
+	if(keysDown[13] && map[(y >> 5)][(x >> 5)]==0 && plugs > 0) {
+	    // Place plug
+	    map[(y >> 5)][(x >> 5)] = 2;
+	    plugs -= 1;
+	}
+
 	dx = 0;
 	dy = 0;
+
 	if(keysDown[40] || keysDown[83]) dy = 1;
 	else if(keysDown[38] || keysDown[87]) dy = -1;
 	else if(keysDown[37] || keysDown[65]) dx = -1;
@@ -181,12 +197,7 @@ function processKeys() {
 		// Collect plug
 		map[(y >> 5) + dy][(x >> 5) + dx] = 0;
 		animating = 32;
-	    }
-
-	} else {
-	    if(keysDown[13] && map[(y >> 5)][(x >> 5)]==0) {
-		// Place plug
-		map[(y >> 5) + dy][(x >> 5) + dx] = 2;
+		plugs += 1;
 	    }
 	}
     } else {
